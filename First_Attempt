@@ -1,0 +1,41 @@
+from selenium import webdriver
+import time
+import pyautogui
+from bs4 import BeautifulSoup
+import requests
+
+driver = webdriver.Chrome()
+driver.maximize_window()
+driver.get('https://growhealthy.com')
+yes_button = driver.find_element_by_xpath('//*[@id="gh-site-gate-form"]/div[1]/div[1]')
+yes_button.click()
+pickup_button = driver.find_element_by_xpath('//*[@id="gh-site-gate-form"]/div[2]/div[2]')
+pickup_button.click()
+select_menu = driver.find_element_by_xpath('//*[@id="gh_store_location"]')
+select_menu.click()
+pyautogui.click(1356, 145)
+submit_button = driver.find_element_by_xpath('//*[@id="gh-site-gate-form"]/input[1]')
+submit_button.click()
+shop_button = driver.find_element_by_xpath('//*[@id="menu-item-309414"]/a')
+shop_button.click()
+
+time.sleep(1.5)
+
+response = requests.get('https://growhealthy.com/product-category/shop/')
+soup = BeautifulSoup(response.text, "html.parser")
+
+# kill all script and style elements
+for script in soup(["script", "style"]):
+    script.extract()    # rip it out
+
+# get text
+text = soup.get_text()
+
+# break into lines and remove leading and trailing space on each
+lines = (line.strip() for line in text.splitlines())
+# break multi-headlines into a line each
+chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+# drop blank lines
+text = '\n'.join(chunk for chunk in chunks if chunk)
+
+print(text)
